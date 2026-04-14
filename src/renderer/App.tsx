@@ -36,6 +36,19 @@ export default function App() {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (confirmDeleteId) { setConfirmDeleteId(null); return; }
+      if (showForm) { setShowForm(false); setEditingProject(null); return; }
+      if (showSettings) { setShowSettings(false); return; }
+      if (showHistory) { setShowHistory(false); return; }
+      if (showMenu) { setShowMenu(false); return; }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [confirmDeleteId, showForm, showSettings, showHistory, showMenu]);
+
   const selectedProject = projects.find(p => p.id === selectedId) || null;
 
   const handleCreate = async (data: any) => {
