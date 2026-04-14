@@ -30,6 +30,8 @@ body {
 /* Sidebar */
 .sidebar {
   width: 240px;
+  min-width: 240px;
+  max-width: 240px;
   background: #16213e;
   border-right: 1px solid #0f3460;
   display: flex;
@@ -38,7 +40,10 @@ body {
 }
 
 .sidebar-header {
-  padding: 16px;
+  height: 61px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
   font-size: 18px;
   font-weight: 700;
   color: #e94560;
@@ -76,13 +81,17 @@ body {
 /* Main content */
 .main {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   padding-top: 36px;
 }
 
 .main-header {
-  padding: 20px 24px;
+  height: 61px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
   border-bottom: 1px solid #0f3460;
 }
 
@@ -227,6 +236,8 @@ body {
   padding: 10px;
   border-radius: 6px;
   font-size: 13px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .status.uploading {
