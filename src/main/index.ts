@@ -18,8 +18,8 @@ const historyStore = new HistoryStore();
 
 const platformNames: Record<string, string> = { apple: 'Apple TestFlight', google: 'Google Play', firebase: 'Firebase dSYM' };
 
-function recordUpload(projectName: string, platform: string, fileName: string, success: boolean, message: string, timestamp: string) {
-  historyStore.add({ projectName, platform: platform as any, fileName, success, message, timestamp });
+function recordUpload(projectName: string, platform: 'apple' | 'google' | 'firebase', fileName: string, success: boolean, message: string, timestamp: string) {
+  historyStore.add({ projectName, platform, fileName, success, message, timestamp });
   mainWindow?.webContents.send('upload:notification', {
     title: success ? '上傳成功' : '上傳失敗',
     body: `${projectName} — ${platformNames[platform] || platform}`,
