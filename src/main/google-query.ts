@@ -26,27 +26,45 @@ export class GoogleQuery {
       const editResponse = await publisher.edits.insert({ packageName, requestBody: {} });
       const editId = editResponse.data.id!;
 
+      // Get all uploaded bundles
+      const bundlesResponse = await publisher.edits.bundles.list({ packageName, editId });
+      const bundles = bundlesResponse.data.bundles || [];
+
+      // Get track info to map versionCode -> track/status
       const tracksResponse = await publisher.edits.tracks.list({ packageName, editId });
       const tracks = tracksResponse.data.tracks || [];
 
-      const builds = tracks.flatMap(track => {
+      const trackMap: Record<string, { trackStatus: string; versionName: string }> = {};
+      for (const track of tracks) {
         const trackName = track.track || 'unknown';
-        return (track.releases || []).flatMap(release =>
-          (release.versionCodes || []).map(vc => ({
-            version: release.name || '-',
-            buildNumber: String(vc),
-            status: `${trackName} (${release.status || 'unknown'})`,
-            updatedAt: '',
-          }))
-        );
-      });
+        for (const release of track.releases || []) {
+          for (const vc of release.versionCodes || []) {
+            trackMap[String(vc)] = {
+              trackStatus: `${trackName} (${release.status || 'unknown'})`,
+              versionName: release.name || '-',
+            };
+          }
+        }
+      }
 
-      // Don't commit the edit - we're only reading
       await publisher.edits.delete({ packageName, editId });
 
-      if (builds.length === 0) {
+      if (bundles.length === 0) {
         return { success: true, message: '目前沒有任何 bundle', builds: [] };
       }
+
+      const builds = bundles
+        .sort((a, b) => (b.versionCode || 0) - (a.versionCode || 0))
+        .map(bundle => {
+          const vc = String(bundle.versionCode || 0);
+          const info = trackMap[vc];
+          return {
+            version: info?.versionName || '-',
+            buildNumber: vc,
+            status: info?.trackStatus || '未指派',
+            updatedAt: '',
+          };
+        });
 
       return { success: true, message: `找到 ${builds.length} 個版本`, builds };
     } catch (err: any) {
