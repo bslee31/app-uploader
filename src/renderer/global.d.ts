@@ -21,6 +21,7 @@ declare global {
       uploadDsym: (projectId: string, dsymPath: string) => Promise<import('../shared/types').UploadResult>;
       queryGoogle: (projectId: string) => Promise<import('../shared/types').QueryResult>;
       queryApple: (projectId: string) => Promise<import('../shared/types').QueryResult>;
+      onUploadNotification: (callback: (data: { title: string; body: string }) => void) => () => void;
       onUploadProgress: (callback: (progress: import('../shared/types').UploadProgress) => void) => () => void;
     };
   }

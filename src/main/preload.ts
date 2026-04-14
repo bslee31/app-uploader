@@ -38,6 +38,13 @@ contextBridge.exposeInMainWorld('api', {
   queryGoogle: (projectId: string) => ipcRenderer.invoke('query:google', projectId),
   queryApple: (projectId: string) => ipcRenderer.invoke('query:apple', projectId),
 
+  // Notification listener
+  onUploadNotification: (callback: (data: { title: string; body: string }) => void) => {
+    const listener = (_event: any, data: any) => callback(data);
+    ipcRenderer.on('upload:notification', listener);
+    return () => ipcRenderer.removeListener('upload:notification', listener);
+  },
+
   // Upload progress listener
   onUploadProgress: (callback: (progress: any) => void) => {
     const listener = (_event: any, progress: any) => callback(progress);

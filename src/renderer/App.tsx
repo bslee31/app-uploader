@@ -26,6 +26,16 @@ export default function App() {
     loadProjects();
   }, [loadProjects]);
 
+  useEffect(() => {
+    Notification.requestPermission();
+    const unsubscribe = window.api.onUploadNotification((data) => {
+      if (Notification.permission === 'granted') {
+        new Notification(data.title, { body: data.body });
+      }
+    });
+    return unsubscribe;
+  }, []);
+
   const selectedProject = projects.find(p => p.id === selectedId) || null;
 
   const handleCreate = async (data: any) => {

@@ -15,6 +15,16 @@ const projectStore = new ProjectStore();
 const settingsStore = new SettingsStore();
 const historyStore = new HistoryStore();
 
+const platformNames: Record<string, string> = { apple: 'Apple TestFlight', google: 'Google Play', firebase: 'Firebase dSYM' };
+
+function recordUpload(projectName: string, platform: string, fileName: string, success: boolean, message: string, timestamp: string) {
+  historyStore.add({ projectName, platform: platform as any, fileName, success, message, timestamp });
+  mainWindow?.webContents.send('upload:notification', {
+    title: success ? '上傳成功' : '上傳失敗',
+    body: `${projectName} — ${platformNames[platform] || platform}`,
+  });
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -136,11 +146,11 @@ ipcMain.handle('upload:google', async (event, projectId: string, aabPath: string
       event.sender.send('upload:progress', { projectId, platform: 'google', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(aabPath, sendProgress);
-    historyStore.add({ projectName: project.name, platform: 'google', fileName: path.basename(aabPath), success: result.success, message: result.message, timestamp: result.timestamp });
+    recordUpload(project.name, 'google', path.basename(aabPath), result.success, result.message, result.timestamp);
     return result;
   } catch (err: any) {
     const timestamp = new Date().toISOString();
-    historyStore.add({ projectName: project.name, platform: 'google', fileName: path.basename(aabPath), success: false, message: err.message, timestamp });
+    recordUpload(project.name, 'google', path.basename(aabPath), false, err.message, timestamp);
     return { success: false, message: err.message, platform: 'google', timestamp };
   }
 });
@@ -158,11 +168,11 @@ ipcMain.handle('upload:apple', async (event, projectId: string, ipaPath: string)
       event.sender.send('upload:progress', { projectId, platform: 'apple', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(ipaPath, sendProgress);
-    historyStore.add({ projectName: project.name, platform: 'apple', fileName: path.basename(ipaPath), success: result.success, message: result.message, timestamp: result.timestamp });
+    recordUpload(project.name, 'apple', path.basename(ipaPath), result.success, result.message, result.timestamp);
     return result;
   } catch (err: any) {
     const timestamp = new Date().toISOString();
-    historyStore.add({ projectName: project.name, platform: 'apple', fileName: path.basename(ipaPath), success: false, message: err.message, timestamp });
+    recordUpload(project.name, 'apple', path.basename(ipaPath), false, err.message, timestamp);
     return { success: false, message: err.message, platform: 'apple', timestamp };
   }
 });
@@ -207,11 +217,11 @@ ipcMain.handle('upload:dsym', async (event, projectId: string, dsymPath: string)
       event.sender.send('upload:progress', { projectId, platform: 'firebase', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(dsymPath, sendProgress);
-    historyStore.add({ projectName: project.name, platform: 'firebase', fileName: path.basename(dsymPath), success: result.success, message: result.message, timestamp: result.timestamp });
+    recordUpload(project.name, 'firebase', path.basename(dsymPath), result.success, result.message, result.timestamp);
     return result;
   } catch (err: any) {
     const timestamp = new Date().toISOString();
-    historyStore.add({ projectName: project.name, platform: 'firebase', fileName: path.basename(dsymPath), success: false, message: err.message, timestamp });
+    recordUpload(project.name, 'firebase', path.basename(dsymPath), false, err.message, timestamp);
     return { success: false, message: err.message, platform: 'firebase', timestamp };
   }
 });
