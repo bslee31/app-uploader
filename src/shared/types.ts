@@ -3,6 +3,7 @@ export interface AppleConfig {
   issuerId: string;
   p8KeyPath: string;
   bundleId: string;
+  googleServiceInfoPlistPath?: string;
 }
 
 export type GoogleReleaseStatus = 'completed' | 'draft';
@@ -22,10 +23,14 @@ export interface Project {
   updatedAt: string;
 }
 
+export interface AppSettings {
+  uploadSymbolsPath: string;
+}
+
 export interface UploadResult {
   success: boolean;
   message: string;
-  platform: 'apple' | 'google';
+  platform: 'apple' | 'google' | 'firebase';
   timestamp: string;
 }
 
@@ -44,7 +49,7 @@ export interface QueryResult {
 
 export interface UploadProgress {
   projectId: string;
-  platform: 'apple' | 'google';
+  platform: 'apple' | 'google' | 'firebase';
   status: 'idle' | 'uploading' | 'success' | 'error';
   message: string;
   progress?: number;

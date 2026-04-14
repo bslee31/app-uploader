@@ -12,11 +12,17 @@ contextBridge.exposeInMainWorld('api', {
   deleteProject: (id: string) => ipcRenderer.invoke('project:delete', id),
   reorderProjects: (orderedIds: string[]) => ipcRenderer.invoke('project:reorder', orderedIds),
 
+  // App settings
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  updateSettings: (data: any) => ipcRenderer.invoke('settings:update', data),
+
   // Upload
   uploadGoogle: (projectId: string, aabPath: string) =>
     ipcRenderer.invoke('upload:google', projectId, aabPath),
   uploadApple: (projectId: string, ipaPath: string) =>
     ipcRenderer.invoke('upload:apple', projectId, ipaPath),
+  uploadDsym: (projectId: string, dsymPath: string) =>
+    ipcRenderer.invoke('upload:dsym', projectId, dsymPath),
 
   // Query builds
   queryGoogle: (projectId: string) => ipcRenderer.invoke('query:google', projectId),

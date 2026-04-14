@@ -5,9 +5,12 @@ import { GoogleUploader } from './google-uploader';
 import { AppleUploader } from './apple-uploader';
 import { GoogleQuery } from './google-query';
 import { AppleQuery } from './apple-query';
+import { FirebaseUploader } from './firebase-uploader';
+import { SettingsStore } from './settings-store';
 
 let mainWindow: BrowserWindow | null = null;
 const projectStore = new ProjectStore();
+const settingsStore = new SettingsStore();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -59,6 +62,10 @@ ipcMain.handle('project:create', (_event, project) => projectStore.create(projec
 ipcMain.handle('project:update', (_event, id: string, data) => projectStore.update(id, data));
 ipcMain.handle('project:delete', (_event, id: string) => projectStore.delete(id));
 ipcMain.handle('project:reorder', (_event, orderedIds: string[]) => projectStore.reorder(orderedIds));
+
+// App settings
+ipcMain.handle('settings:get', () => settingsStore.get());
+ipcMain.handle('settings:update', (_event, data) => settingsStore.update(data));
 
 // Google Play upload
 ipcMain.handle('upload:google', async (event, projectId: string, aabPath: string) => {
@@ -118,4 +125,28 @@ ipcMain.handle('query:apple', async (_event, projectId: string) => {
   }
   const query = new AppleQuery(project.apple);
   return query.listBuilds();
+});
+
+// Firebase dSYM upload
+ipcMain.handle('upload:dsym', async (event, projectId: string, dsymPath: string) => {
+  const project = projectStore.get(projectId);
+  if (!project?.apple?.googleServiceInfoPlistPath) {
+    return { success: false, message: '請先在專案設定中選擇 GoogleService-Info.plist', platform: 'firebase', timestamp: new Date().toISOString() };
+  }
+
+  const settings = settingsStore.get();
+  if (!settings.uploadSymbolsPath) {
+    return { success: false, message: '請先在全域設定中設定 upload-symbols 路徑', platform: 'firebase', timestamp: new Date().toISOString() };
+  }
+
+  const uploader = new FirebaseUploader(project.apple.googleServiceInfoPlistPath, settings.uploadSymbolsPath);
+  try {
+    const sendProgress = (msg: string, progress: number) => {
+      event.sender.send('upload:progress', { projectId, platform: 'firebase', status: 'uploading', message: msg, progress });
+    };
+    const result = await uploader.upload(dsymPath, sendProgress);
+    return result;
+  } catch (err: any) {
+    return { success: false, message: err.message, platform: 'firebase', timestamp: new Date().toISOString() };
+  }
 });

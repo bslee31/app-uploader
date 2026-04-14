@@ -4,8 +4,10 @@ import { Project, UploadProgress, QueryResult } from '../../shared/types';
 interface ProjectUploadState {
   aabPath: string;
   ipaPath: string;
+  dsymPath: string;
   googleStatus: UploadProgress;
   appleStatus: UploadProgress;
+  firebaseStatus: UploadProgress;
   googleQuery: QueryResult | null;
   appleQuery: QueryResult | null;
   googleQuerying: boolean;
@@ -16,8 +18,10 @@ function defaultState(projectId: string): ProjectUploadState {
   return {
     aabPath: '',
     ipaPath: '',
+    dsymPath: '',
     googleStatus: { projectId, platform: 'google', status: 'idle', message: '' },
     appleStatus: { projectId, platform: 'apple', status: 'idle', message: '' },
+    firebaseStatus: { projectId, platform: 'firebase', status: 'idle', message: '' },
     googleQuery: null,
     appleQuery: null,
     googleQuerying: false,
@@ -50,6 +54,9 @@ export default function UploadPanel({ project }: Props) {
       if (progress.platform === 'apple') {
         update(pid, { appleStatus: progress });
       }
+      if (progress.platform === 'firebase') {
+        update(pid, { firebaseStatus: progress });
+      }
     });
     return unsubscribe;
   }, [update]);
@@ -72,6 +79,22 @@ export default function UploadPanel({ project }: Props) {
     const result = await window.api.uploadGoogle(project.id, state.aabPath);
     update(project.id, {
       googleStatus: { projectId: project.id, platform: 'google', status: result.success ? 'success' : 'error', message: result.message },
+    });
+  };
+
+  const handleSelectDsym = async () => {
+    const path = await window.api.openFile([{ name: 'dSYM', extensions: ['zip', 'dSYM'] }]);
+    if (path) update(project.id, { dsymPath: path });
+  };
+
+  const handleUploadDsym = async () => {
+    if (!state.dsymPath) return;
+    update(project.id, {
+      firebaseStatus: { projectId: project.id, platform: 'firebase', status: 'uploading', message: '準備上傳...', progress: -1 },
+    });
+    const result = await window.api.uploadDsym(project.id, state.dsymPath);
+    update(project.id, {
+      firebaseStatus: { projectId: project.id, platform: 'firebase', status: result.success ? 'success' : 'error', message: result.message },
     });
   };
 
@@ -100,6 +123,7 @@ export default function UploadPanel({ project }: Props) {
 
   const isGoogleUploading = state.googleStatus.status === 'uploading';
   const isAppleUploading = state.appleStatus.status === 'uploading';
+  const isFirebaseUploading = state.firebaseStatus.status === 'uploading';
 
   return (
     <div className="upload-sections">
@@ -142,6 +166,34 @@ export default function UploadPanel({ project }: Props) {
             )}
             {state.appleQuery && (
               <BuildTable result={state.appleQuery} platform="apple" />
+            )}
+            {project.apple?.googleServiceInfoPlistPath && (
+              <>
+                <div className="subsection-title">Firebase Crashlytics dSYM</div>
+                <div className="upload-row">
+                  <button className="btn btn-secondary" onClick={handleSelectDsym} disabled={isFirebaseUploading}>
+                    選擇 dSYM
+                  </button>
+                  <div className="file-path-inline">{state.dsymPath || '尚未選擇檔案'}</div>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleUploadDsym}
+                    disabled={!state.dsymPath || isFirebaseUploading}
+                  >
+                    {isFirebaseUploading ? '上傳中...' : '上傳'}
+                  </button>
+                </div>
+                {state.firebaseStatus.status !== 'idle' && (
+                  <div className={`status ${state.firebaseStatus.status}`}>
+                    {state.firebaseStatus.status === 'uploading' && (
+                      <div className="progress-bar">
+                        <div className="progress-bar-fill indeterminate" />
+                      </div>
+                    )}
+                    {state.firebaseStatus.message}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

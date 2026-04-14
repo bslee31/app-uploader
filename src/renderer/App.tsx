@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Project } from '../shared/types';
 import ProjectForm from './components/ProjectForm';
 import UploadPanel from './components/UploadPanel';
+import SettingsForm from './components/SettingsForm';
 
 export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -9,6 +10,7 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dragItemId = useRef<string | null>(null);
 
@@ -86,13 +88,22 @@ export default function App() {
       <div className="sidebar">
         <div className="sidebar-header">
           <span>App Uploader</span>
-          <button
-            className="icon-btn"
-            onClick={() => { setEditingProject(null); setShowForm(true); }}
-            title="新增專案"
-          >
-            +
-          </button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button
+              className="icon-btn"
+              onClick={() => setShowSettings(true)}
+              title="全域設定"
+            >
+              ⚙
+            </button>
+            <button
+              className="icon-btn"
+              onClick={() => { setEditingProject(null); setShowForm(true); }}
+              title="新增專案"
+            >
+              +
+            </button>
+          </div>
         </div>
         <div className="sidebar-list">
           {projects.map(p => (
@@ -163,6 +174,10 @@ export default function App() {
           onCancel={() => { setShowForm(false); setEditingProject(null); }}
           onDelete={editingProject ? () => { setShowForm(false); setConfirmDeleteId(editingProject.id); } : undefined}
         />
+      )}
+
+      {showSettings && (
+        <SettingsForm onClose={() => setShowSettings(false)} />
       )}
     </div>
   );

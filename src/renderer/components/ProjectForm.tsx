@@ -14,6 +14,7 @@ export default function ProjectForm({ project, onSubmit, onCancel, onDelete }: P
   const [issuerId, setIssuerId] = useState(project?.apple?.issuerId || '');
   const [p8KeyPath, setP8KeyPath] = useState(project?.apple?.p8KeyPath || '');
   const [bundleId, setBundleId] = useState(project?.apple?.bundleId || '');
+  const [googleServiceInfoPlistPath, setGoogleServiceInfoPlistPath] = useState(project?.apple?.googleServiceInfoPlistPath || '');
   const [serviceAccountKeyPath, setServiceAccountKeyPath] = useState(project?.google?.serviceAccountKeyPath || '');
   const [packageName, setPackageName] = useState(project?.google?.packageName || '');
   const [releaseStatus, setReleaseStatus] = useState<GoogleReleaseStatus>(project?.google?.releaseStatus || 'draft');
@@ -21,6 +22,11 @@ export default function ProjectForm({ project, onSubmit, onCancel, onDelete }: P
   const handleSelectP8 = async () => {
     const path = await window.api.openFile([{ name: 'API Key', extensions: ['p8'] }]);
     if (path) setP8KeyPath(path);
+  };
+
+  const handleSelectPlist = async () => {
+    const path = await window.api.openFile([{ name: 'Plist', extensions: ['plist'] }]);
+    if (path) setGoogleServiceInfoPlistPath(path);
   };
 
   const handleSelectServiceAccount = async () => {
@@ -42,7 +48,7 @@ export default function ProjectForm({ project, onSubmit, onCancel, onDelete }: P
     const data: any = { name };
 
     if (appleComplete) {
-      data.apple = { apiKeyId, issuerId, p8KeyPath, bundleId };
+      data.apple = { apiKeyId, issuerId, p8KeyPath, bundleId, ...(googleServiceInfoPlistPath.trim() && { googleServiceInfoPlistPath }) };
     }
 
     if (googleComplete) {
@@ -84,6 +90,14 @@ export default function ProjectForm({ project, onSubmit, onCancel, onDelete }: P
           <div className="form-row">
             <input value={p8KeyPath} onChange={e => setP8KeyPath(e.target.value)} placeholder="選擇 .p8 檔案" readOnly />
             <button className="btn btn-secondary" onClick={handleSelectP8}>瀏覽</button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>GoogleService-Info.plist（選填，用於上傳 dSYM）</label>
+          <div className="form-row">
+            <input value={googleServiceInfoPlistPath} onChange={e => setGoogleServiceInfoPlistPath(e.target.value)} placeholder="選擇 GoogleService-Info.plist" readOnly />
+            <button className="btn btn-secondary" onClick={handleSelectPlist}>瀏覽</button>
           </div>
         </div>
 
