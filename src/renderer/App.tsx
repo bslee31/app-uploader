@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Project, UploadProgress } from '../shared/types';
+import { Project } from '../shared/types';
 import ProjectForm from './components/ProjectForm';
 import UploadPanel from './components/UploadPanel';
 

@@ -1,65 +1,85 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Project, UploadProgress } from '../../shared/types';
+
+interface ProjectUploadState {
+  aabPath: string;
+  ipaPath: string;
+  googleStatus: UploadProgress;
+  appleStatus: UploadProgress;
+}
+
+function defaultState(projectId: string): ProjectUploadState {
+  return {
+    aabPath: '',
+    ipaPath: '',
+    googleStatus: { projectId, platform: 'google', status: 'idle', message: '' },
+    appleStatus: { projectId, platform: 'apple', status: 'idle', message: '' },
+  };
+}
 
 interface Props {
   project: Project;
 }
 
 export default function UploadPanel({ project }: Props) {
-  const [aabPath, setAabPath] = useState('');
-  const [ipaPath, setIpaPath] = useState('');
-  const [googleStatus, setGoogleStatus] = useState<UploadProgress>({ platform: 'google', status: 'idle', message: '' });
-  const [appleStatus, setAppleStatus] = useState<UploadProgress>({ platform: 'apple', status: 'idle', message: '' });
+  const [stateMap, setStateMap] = useState<Record<string, ProjectUploadState>>({});
 
-  useEffect(() => {
-    const unsubscribe = window.api.onUploadProgress((progress: UploadProgress) => {
-      if (progress.platform === 'google') setGoogleStatus(progress);
-      if (progress.platform === 'apple') setAppleStatus(progress);
-    });
-    return unsubscribe;
+  const state = stateMap[project.id] || defaultState(project.id);
+
+  const update = useCallback((projectId: string, changes: Partial<ProjectUploadState>) => {
+    setStateMap(prev => ({
+      ...prev,
+      [projectId]: { ...(prev[projectId] || defaultState(projectId)), ...changes },
+    }));
   }, []);
 
   useEffect(() => {
-    setAabPath('');
-    setIpaPath('');
-    setGoogleStatus({ platform: 'google', status: 'idle', message: '' });
-    setAppleStatus({ platform: 'apple', status: 'idle', message: '' });
-  }, [project.id]);
+    const unsubscribe = window.api.onUploadProgress((progress: UploadProgress) => {
+      const pid = progress.projectId;
+      if (progress.platform === 'google') {
+        update(pid, { googleStatus: progress });
+      }
+      if (progress.platform === 'apple') {
+        update(pid, { appleStatus: progress });
+      }
+    });
+    return unsubscribe;
+  }, [update]);
 
   const handleSelectAab = async () => {
     const path = await window.api.openFile([{ name: 'Android App Bundle', extensions: ['aab'] }]);
-    if (path) setAabPath(path);
+    if (path) update(project.id, { aabPath: path });
   };
 
   const handleSelectIpa = async () => {
     const path = await window.api.openFile([{ name: 'iOS App', extensions: ['ipa'] }]);
-    if (path) setIpaPath(path);
+    if (path) update(project.id, { ipaPath: path });
   };
 
   const handleUploadGoogle = async () => {
-    if (!aabPath) return;
-    setGoogleStatus({ platform: 'google', status: 'uploading', message: '準備上傳...', progress: 0 });
-    const result = await window.api.uploadGoogle(project.id, aabPath);
-    setGoogleStatus({
-      platform: 'google',
-      status: result.success ? 'success' : 'error',
-      message: result.message,
+    if (!state.aabPath) return;
+    update(project.id, {
+      googleStatus: { projectId: project.id, platform: 'google', status: 'uploading', message: '準備上傳...', progress: 0 },
+    });
+    const result = await window.api.uploadGoogle(project.id, state.aabPath);
+    update(project.id, {
+      googleStatus: { projectId: project.id, platform: 'google', status: result.success ? 'success' : 'error', message: result.message },
     });
   };
 
   const handleUploadApple = async () => {
-    if (!ipaPath) return;
-    setAppleStatus({ platform: 'apple', status: 'uploading', message: '準備上傳...', progress: -1 });
-    const result = await window.api.uploadApple(project.id, ipaPath);
-    setAppleStatus({
-      platform: 'apple',
-      status: result.success ? 'success' : 'error',
-      message: result.message,
+    if (!state.ipaPath) return;
+    update(project.id, {
+      appleStatus: { projectId: project.id, platform: 'apple', status: 'uploading', message: '準備上傳...', progress: -1 },
+    });
+    const result = await window.api.uploadApple(project.id, state.ipaPath);
+    update(project.id, {
+      appleStatus: { projectId: project.id, platform: 'apple', status: result.success ? 'success' : 'error', message: result.message },
     });
   };
 
-  const isGoogleUploading = googleStatus.status === 'uploading';
-  const isAppleUploading = appleStatus.status === 'uploading';
+  const isGoogleUploading = state.googleStatus.status === 'uploading';
+  const isAppleUploading = state.appleStatus.status === 'uploading';
 
   return (
     <div className="upload-sections">
@@ -74,23 +94,23 @@ export default function UploadPanel({ project }: Props) {
               <button className="btn btn-secondary" onClick={handleSelectIpa} disabled={isAppleUploading}>
                 選擇 IPA
               </button>
-              <div className="file-path-inline">{ipaPath || '尚未選擇檔案'}</div>
+              <div className="file-path-inline">{state.ipaPath || '尚未選擇檔案'}</div>
               <button
                 className="btn btn-primary"
                 onClick={handleUploadApple}
-                disabled={!ipaPath || isAppleUploading}
+                disabled={!state.ipaPath || isAppleUploading}
               >
                 {isAppleUploading ? '上傳中...' : '上傳'}
               </button>
             </div>
-            {appleStatus.status !== 'idle' && (
-              <div className={`status ${appleStatus.status}`}>
-                {appleStatus.status === 'uploading' && (
+            {state.appleStatus.status !== 'idle' && (
+              <div className={`status ${state.appleStatus.status}`}>
+                {state.appleStatus.status === 'uploading' && (
                   <div className="progress-bar">
                     <div className="progress-bar-fill indeterminate" />
                   </div>
                 )}
-                {appleStatus.message}
+                {state.appleStatus.message}
               </div>
             )}
           </>
@@ -108,23 +128,23 @@ export default function UploadPanel({ project }: Props) {
               <button className="btn btn-secondary" onClick={handleSelectAab} disabled={isGoogleUploading}>
                 選擇 AAB
               </button>
-              <div className="file-path-inline">{aabPath || '尚未選擇檔案'}</div>
+              <div className="file-path-inline">{state.aabPath || '尚未選擇檔案'}</div>
               <button
                 className="btn btn-primary"
                 onClick={handleUploadGoogle}
-                disabled={!aabPath || isGoogleUploading}
+                disabled={!state.aabPath || isGoogleUploading}
               >
                 {isGoogleUploading ? '上傳中...' : '上傳'}
               </button>
             </div>
-            {googleStatus.status !== 'idle' && (
-              <div className={`status ${googleStatus.status}`}>
-                {googleStatus.status === 'uploading' && googleStatus.progress !== undefined && googleStatus.progress >= 0 && (
+            {state.googleStatus.status !== 'idle' && (
+              <div className={`status ${state.googleStatus.status}`}>
+                {state.googleStatus.status === 'uploading' && state.googleStatus.progress !== undefined && state.googleStatus.progress >= 0 && (
                   <div className="progress-bar">
-                    <div className="progress-bar-fill" style={{ width: `${googleStatus.progress}%` }} />
+                    <div className="progress-bar-fill" style={{ width: `${state.googleStatus.progress}%` }} />
                   </div>
                 )}
-                {googleStatus.message}
+                {state.googleStatus.message}
               </div>
             )}
           </>

@@ -29,6 +29,7 @@ export interface UploadResult {
 }
 
 export interface UploadProgress {
+  projectId: string;
   platform: 'apple' | 'google';
   status: 'idle' | 'uploading' | 'success' | 'error';
   message: string;
