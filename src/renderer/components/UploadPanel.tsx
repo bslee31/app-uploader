@@ -19,6 +19,13 @@ export default function UploadPanel({ project }: Props) {
     return unsubscribe;
   }, []);
 
+  useEffect(() => {
+    setAabPath('');
+    setIpaPath('');
+    setGoogleStatus({ platform: 'google', status: 'idle', message: '' });
+    setAppleStatus({ platform: 'apple', status: 'idle', message: '' });
+  }, [project.id]);
+
   const handleSelectAab = async () => {
     const path = await window.api.openFile([{ name: 'Android App Bundle', extensions: ['aab'] }]);
     if (path) setAabPath(path);

@@ -221,13 +221,6 @@ body {
   white-space: nowrap;
 }
 
-.file-path {
-  font-size: 12px;
-  color: #a0a0a0;
-  margin-top: 8px;
-  word-break: break-all;
-}
-
 /* Status */
 .status {
   margin-top: 12px;

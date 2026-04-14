@@ -26,14 +26,24 @@ export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
     if (path) setServiceAccountKeyPath(path);
   };
 
+  const appleFields = [apiKeyId, issuerId, p8KeyPath];
+  const appleSome = appleFields.some(f => f.trim());
+  const appleComplete = appleFields.every(f => f.trim());
+
+  const googleFields = [serviceAccountKeyPath, packageName];
+  const googleSome = googleFields.some(f => f.trim());
+  const googleComplete = googleFields.every(f => f.trim());
+
+  const hasIncomplete = (appleSome && !appleComplete) || (googleSome && !googleComplete);
+
   const handleSubmit = () => {
     const data: any = { name };
 
-    if (apiKeyId || issuerId || p8KeyPath) {
+    if (appleComplete) {
       data.apple = { apiKeyId, issuerId, p8KeyPath };
     }
 
-    if (serviceAccountKeyPath || packageName) {
+    if (googleComplete) {
       data.google = { serviceAccountKeyPath, packageName, releaseStatus };
     }
 
@@ -93,8 +103,15 @@ export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
           </div>
         </div>
 
+        {hasIncomplete && (
+          <p style={{ color: '#ff6b6b', fontSize: 13, marginTop: 12 }}>
+            {appleSome && !appleComplete && 'Apple 設定不完整，請填寫所有欄位或全部清空。'}
+            {googleSome && !googleComplete && 'Google Play 設定不完整，請填寫所有欄位或全部清空。'}
+          </p>
+        )}
+
         <div className="modal-actions">
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={!name.trim()}>
+          <button className="btn btn-primary" onClick={handleSubmit} disabled={!name.trim() || hasIncomplete}>
             {project ? '儲存' : '建立'}
           </button>
           <button className="btn btn-secondary" onClick={onCancel}>取消</button>
