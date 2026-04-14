@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import fs from 'fs';
 import path from 'path';
 import { ProjectStore } from './project-store';
 import { GoogleUploader } from './google-uploader';
@@ -80,6 +81,47 @@ ipcMain.handle('settings:update', (_event, data) => settingsStore.update(data));
 // Upload history
 ipcMain.handle('history:list', () => historyStore.list());
 ipcMain.handle('history:clear', () => historyStore.clear());
+
+// Export / Import
+ipcMain.handle('config:export', async () => {
+  const result = await dialog.showSaveDialog({
+    defaultPath: 'app-uploader-config.json',
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  });
+  if (result.canceled || !result.filePath) return { success: false };
+
+  const data = {
+    projects: projectStore.list(),
+    settings: settingsStore.get(),
+  };
+  fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), 'utf-8');
+  return { success: true, message: `已匯出至 ${result.filePath}` };
+});
+
+ipcMain.handle('config:import', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  });
+  if (result.canceled || !result.filePaths[0]) return { success: false };
+
+  try {
+    const raw = fs.readFileSync(result.filePaths[0], 'utf-8');
+    const data = JSON.parse(raw);
+
+    if (!data.projects || !Array.isArray(data.projects)) {
+      return { success: false, message: '無效的設定檔格式' };
+    }
+
+    projectStore.importAll(data.projects);
+    if (data.settings) {
+      settingsStore.update(data.settings);
+    }
+    return { success: true, message: `已匯入 ${data.projects.length} 個專案` };
+  } catch {
+    return { success: false, message: '無法讀取設定檔' };
+  }
+});
 
 // Google Play upload
 ipcMain.handle('upload:google', async (event, projectId: string, aabPath: string) => {

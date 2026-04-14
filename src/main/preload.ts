@@ -18,6 +18,10 @@ contextBridge.exposeInMainWorld('api', {
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (data: any) => ipcRenderer.invoke('settings:update', data),
 
+  // Export / Import
+  exportConfig: () => ipcRenderer.invoke('config:export'),
+  importConfig: () => ipcRenderer.invoke('config:import'),
+
   // Upload history
   listHistory: () => ipcRenderer.invoke('history:list'),
   clearHistory: () => ipcRenderer.invoke('history:clear'),

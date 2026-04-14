@@ -51,6 +51,19 @@ export default function App() {
     await loadProjects();
   };
 
+  // Export / Import
+  const handleExport = async () => {
+    await window.api.exportConfig();
+  };
+
+  const handleImport = async () => {
+    const result = await window.api.importConfig();
+    if (result.success) {
+      await loadProjects();
+      setSelectedId(null);
+    }
+  };
+
   // Drag and drop
   const handleDragStart = (id: string) => {
     dragItemId.current = id;
@@ -113,6 +126,14 @@ export default function App() {
                 <div className="dropdown-item" onClick={() => { setShowMenu(false); setShowHistory(true); }}>
                   <span className="dropdown-icon">⏱</span>上傳歷史
                 </div>
+                <div className="dropdown-divider" />
+                <div className="dropdown-item" onClick={() => { setShowMenu(false); handleExport(); }}>
+                  <span className="dropdown-icon">↑</span>匯出設定
+                </div>
+                <div className="dropdown-item" onClick={() => { setShowMenu(false); handleImport(); }}>
+                  <span className="dropdown-icon">↓</span>匯入設定
+                </div>
+                <div className="dropdown-divider" />
                 <div className="dropdown-item" onClick={() => { setShowMenu(false); setShowSettings(true); }}>
                   <span className="dropdown-icon">⚙</span>全域設定
                 </div>

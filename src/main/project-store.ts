@@ -96,6 +96,11 @@ export class ProjectStore {
     this.save();
   }
 
+  importAll(projects: Project[]) {
+    this.projects = projects;
+    this.save();
+  }
+
   delete(id: string): boolean {
     const index = this.projects.findIndex(p => p.id === id);
     if (index === -1) return false;

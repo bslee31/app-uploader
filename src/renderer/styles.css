@@ -148,6 +148,12 @@ body {
   text-align: center;
 }
 
+.dropdown-divider {
+  height: 1px;
+  background: #0f3460;
+  margin: 4px 0;
+}
+
 .dropdown-item:hover {
   background: #0f3460;
 }
