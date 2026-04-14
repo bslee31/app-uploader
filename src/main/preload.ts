@@ -18,6 +18,10 @@ contextBridge.exposeInMainWorld('api', {
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (data: any) => ipcRenderer.invoke('settings:update', data),
 
+  // Upload history
+  listHistory: () => ipcRenderer.invoke('history:list'),
+  clearHistory: () => ipcRenderer.invoke('history:clear'),
+
   // Upload
   uploadGoogle: (projectId: string, aabPath: string) =>
     ipcRenderer.invoke('upload:google', projectId, aabPath),

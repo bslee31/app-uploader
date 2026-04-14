@@ -27,6 +27,16 @@ export interface AppSettings {
   uploadSymbolsPath: string;
 }
 
+export interface HistoryEntry {
+  id: string;
+  projectName: string;
+  platform: 'apple' | 'google' | 'firebase';
+  fileName: string;
+  success: boolean;
+  message: string;
+  timestamp: string;
+}
+
 export interface UploadResult {
   success: boolean;
   message: string;

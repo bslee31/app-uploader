@@ -12,6 +12,8 @@ declare global {
       reorderProjects: (orderedIds: string[]) => Promise<void>;
       getSettings: () => Promise<import('../shared/types').AppSettings>;
       updateSettings: (data: Partial<import('../shared/types').AppSettings>) => Promise<void>;
+      listHistory: () => Promise<import('../shared/types').HistoryEntry[]>;
+      clearHistory: () => Promise<void>;
       uploadGoogle: (projectId: string, aabPath: string) => Promise<import('../shared/types').UploadResult>;
       uploadApple: (projectId: string, ipaPath: string) => Promise<import('../shared/types').UploadResult>;
       uploadDsym: (projectId: string, dsymPath: string) => Promise<import('../shared/types').UploadResult>;

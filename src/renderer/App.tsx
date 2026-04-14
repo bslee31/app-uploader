@@ -3,6 +3,7 @@ import { Project } from '../shared/types';
 import ProjectForm from './components/ProjectForm';
 import UploadPanel from './components/UploadPanel';
 import SettingsForm from './components/SettingsForm';
+import HistoryPanel from './components/HistoryPanel';
 
 export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -11,6 +12,8 @@ export default function App() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dragItemId = useRef<string | null>(null);
 
@@ -83,26 +86,38 @@ export default function App() {
     setDragOverId(null);
   };
 
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleClick = () => setShowMenu(false);
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [showMenu]);
+
   return (
     <div className="app">
       <div className="sidebar">
         <div className="sidebar-header">
           <span>App Uploader</span>
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div className="menu-wrapper">
             <button
               className="icon-btn"
-              onClick={() => setShowSettings(true)}
-              title="全域設定"
+              onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
             >
-              ⚙
+              ⋯
             </button>
-            <button
-              className="icon-btn"
-              onClick={() => { setEditingProject(null); setShowForm(true); }}
-              title="新增專案"
-            >
-              +
-            </button>
+            {showMenu && (
+              <div className="dropdown-menu">
+                <div className="dropdown-item" onClick={() => { setShowMenu(false); setEditingProject(null); setShowForm(true); }}>
+                  <span className="dropdown-icon">+</span>新增專案
+                </div>
+                <div className="dropdown-item" onClick={() => { setShowMenu(false); setShowHistory(true); }}>
+                  <span className="dropdown-icon">⏱</span>上傳歷史
+                </div>
+                <div className="dropdown-item" onClick={() => { setShowMenu(false); setShowSettings(true); }}>
+                  <span className="dropdown-icon">⚙</span>全域設定
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="sidebar-list">
@@ -178,6 +193,10 @@ export default function App() {
 
       {showSettings && (
         <SettingsForm onClose={() => setShowSettings(false)} />
+      )}
+
+      {showHistory && (
+        <HistoryPanel onClose={() => setShowHistory(false)} />
       )}
     </div>
   );

@@ -7,16 +7,18 @@ import { GoogleQuery } from './google-query';
 import { AppleQuery } from './apple-query';
 import { FirebaseUploader } from './firebase-uploader';
 import { SettingsStore } from './settings-store';
+import { HistoryStore } from './history-store';
 
 let mainWindow: BrowserWindow | null = null;
 const projectStore = new ProjectStore();
 const settingsStore = new SettingsStore();
+const historyStore = new HistoryStore();
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 900,
+    width: 1000,
     height: 700,
-    minWidth: 700,
+    minWidth: 800,
     minHeight: 500,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -75,6 +77,10 @@ ipcMain.handle('project:reorder', (_event, orderedIds: string[]) => projectStore
 ipcMain.handle('settings:get', () => settingsStore.get());
 ipcMain.handle('settings:update', (_event, data) => settingsStore.update(data));
 
+// Upload history
+ipcMain.handle('history:list', () => historyStore.list());
+ipcMain.handle('history:clear', () => historyStore.clear());
+
 // Google Play upload
 ipcMain.handle('upload:google', async (event, projectId: string, aabPath: string) => {
   const project = projectStore.get(projectId);
@@ -88,9 +94,12 @@ ipcMain.handle('upload:google', async (event, projectId: string, aabPath: string
       event.sender.send('upload:progress', { projectId, platform: 'google', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(aabPath, sendProgress);
+    historyStore.add({ projectName: project.name, platform: 'google', fileName: path.basename(aabPath), success: result.success, message: result.message, timestamp: result.timestamp });
     return result;
   } catch (err: any) {
-    return { success: false, message: err.message, platform: 'google', timestamp: new Date().toISOString() };
+    const timestamp = new Date().toISOString();
+    historyStore.add({ projectName: project.name, platform: 'google', fileName: path.basename(aabPath), success: false, message: err.message, timestamp });
+    return { success: false, message: err.message, platform: 'google', timestamp };
   }
 });
 
@@ -107,9 +116,12 @@ ipcMain.handle('upload:apple', async (event, projectId: string, ipaPath: string)
       event.sender.send('upload:progress', { projectId, platform: 'apple', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(ipaPath, sendProgress);
+    historyStore.add({ projectName: project.name, platform: 'apple', fileName: path.basename(ipaPath), success: result.success, message: result.message, timestamp: result.timestamp });
     return result;
   } catch (err: any) {
-    return { success: false, message: err.message, platform: 'apple', timestamp: new Date().toISOString() };
+    const timestamp = new Date().toISOString();
+    historyStore.add({ projectName: project.name, platform: 'apple', fileName: path.basename(ipaPath), success: false, message: err.message, timestamp });
+    return { success: false, message: err.message, platform: 'apple', timestamp };
   }
 });
 
@@ -153,8 +165,11 @@ ipcMain.handle('upload:dsym', async (event, projectId: string, dsymPath: string)
       event.sender.send('upload:progress', { projectId, platform: 'firebase', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(dsymPath, sendProgress);
+    historyStore.add({ projectName: project.name, platform: 'firebase', fileName: path.basename(dsymPath), success: result.success, message: result.message, timestamp: result.timestamp });
     return result;
   } catch (err: any) {
-    return { success: false, message: err.message, platform: 'firebase', timestamp: new Date().toISOString() };
+    const timestamp = new Date().toISOString();
+    historyStore.add({ projectName: project.name, platform: 'firebase', fileName: path.basename(dsymPath), success: false, message: err.message, timestamp });
+    return { success: false, message: err.message, platform: 'firebase', timestamp };
   }
 });
