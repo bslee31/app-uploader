@@ -34,9 +34,12 @@ export default function App() {
     setShowForm(false);
   };
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
     await window.api.deleteProject(id);
     if (selectedId === id) setSelectedId(null);
+    setConfirmDeleteId(null);
     await loadProjects();
   };
 
@@ -85,7 +88,7 @@ export default function App() {
                   </button>
                   <button
                     className="btn btn-danger"
-                    onClick={() => handleDelete(selectedProject.id)}
+                    onClick={() => setConfirmDeleteId(selectedProject.id)}
                   >
                     刪除專案
                   </button>
@@ -101,6 +104,23 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {confirmDeleteId && (
+        <div className="modal-overlay" onClick={() => setConfirmDeleteId(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3>確認刪除</h3>
+            <p>確定要刪除專案「{projects.find(p => p.id === confirmDeleteId)?.name}」嗎？此操作無法復原。</p>
+            <div className="modal-actions">
+              <button className="btn btn-danger" onClick={() => handleDelete(confirmDeleteId)}>
+                確認刪除
+              </button>
+              <button className="btn btn-secondary" onClick={() => setConfirmDeleteId(null)}>
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <ProjectForm

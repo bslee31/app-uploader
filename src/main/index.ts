@@ -67,8 +67,8 @@ ipcMain.handle('upload:google', async (event, projectId: string, aabPath: string
 
   const uploader = new GoogleUploader(project.google);
   try {
-    const sendProgress = (msg: string) => {
-      event.sender.send('upload:progress', { platform: 'google', status: 'uploading', message: msg });
+    const sendProgress = (msg: string, progress: number) => {
+      event.sender.send('upload:progress', { platform: 'google', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(aabPath, sendProgress);
     return result;
@@ -86,8 +86,8 @@ ipcMain.handle('upload:apple', async (event, projectId: string, ipaPath: string)
 
   const uploader = new AppleUploader(project.apple);
   try {
-    const sendProgress = (msg: string) => {
-      event.sender.send('upload:progress', { platform: 'apple', status: 'uploading', message: msg });
+    const sendProgress = (msg: string, progress: number) => {
+      event.sender.send('upload:progress', { platform: 'apple', status: 'uploading', message: msg, progress });
     };
     const result = await uploader.upload(ipaPath, sendProgress);
     return result;

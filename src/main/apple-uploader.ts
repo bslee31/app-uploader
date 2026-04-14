@@ -9,7 +9,7 @@ export class AppleUploader {
     this.config = config;
   }
 
-  async upload(ipaPath: string, onProgress: (msg: string) => void): Promise<UploadResult> {
+  async upload(ipaPath: string, onProgress: (msg: string, progress: number) => void): Promise<UploadResult> {
     const timestamp = new Date().toISOString();
 
     if (!fs.existsSync(ipaPath)) {
@@ -20,7 +20,7 @@ export class AppleUploader {
       return { success: false, message: `API Key (.p8) 不存在: ${this.config.p8KeyPath}`, platform: 'apple', timestamp };
     }
 
-    onProgress('正在上傳 IPA 到 TestFlight...');
+    onProgress('正在上傳 IPA 到 TestFlight...', -1);
 
     return new Promise((resolve) => {
       const args = [
@@ -52,7 +52,7 @@ export class AppleUploader {
       });
 
       child.stdout?.on('data', (data: string) => {
-        onProgress(data.trim());
+        onProgress(data.trim(), -1);
       });
     });
   }

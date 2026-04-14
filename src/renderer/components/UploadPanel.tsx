@@ -31,7 +31,7 @@ export default function UploadPanel({ project }: Props) {
 
   const handleUploadGoogle = async () => {
     if (!aabPath) return;
-    setGoogleStatus({ platform: 'google', status: 'uploading', message: '準備上傳...' });
+    setGoogleStatus({ platform: 'google', status: 'uploading', message: '準備上傳...', progress: 0 });
     const result = await window.api.uploadGoogle(project.id, aabPath);
     setGoogleStatus({
       platform: 'google',
@@ -42,7 +42,7 @@ export default function UploadPanel({ project }: Props) {
 
   const handleUploadApple = async () => {
     if (!ipaPath) return;
-    setAppleStatus({ platform: 'apple', status: 'uploading', message: '準備上傳...' });
+    setAppleStatus({ platform: 'apple', status: 'uploading', message: '準備上傳...', progress: -1 });
     const result = await window.api.uploadApple(project.id, ipaPath);
     setAppleStatus({
       platform: 'apple',
@@ -77,7 +77,14 @@ export default function UploadPanel({ project }: Props) {
               </button>
             </div>
             {appleStatus.status !== 'idle' && (
-              <div className={`status ${appleStatus.status}`}>{appleStatus.message}</div>
+              <div className={`status ${appleStatus.status}`}>
+                {appleStatus.status === 'uploading' && (
+                  <div className="progress-bar">
+                    <div className="progress-bar-fill indeterminate" />
+                  </div>
+                )}
+                {appleStatus.message}
+              </div>
             )}
           </>
         )}
@@ -104,7 +111,14 @@ export default function UploadPanel({ project }: Props) {
               </button>
             </div>
             {googleStatus.status !== 'idle' && (
-              <div className={`status ${googleStatus.status}`}>{googleStatus.message}</div>
+              <div className={`status ${googleStatus.status}`}>
+                {googleStatus.status === 'uploading' && googleStatus.progress !== undefined && googleStatus.progress >= 0 && (
+                  <div className="progress-bar">
+                    <div className="progress-bar-fill" style={{ width: `${googleStatus.progress}%` }} />
+                  </div>
+                )}
+                {googleStatus.message}
+              </div>
             )}
           </>
         )}
