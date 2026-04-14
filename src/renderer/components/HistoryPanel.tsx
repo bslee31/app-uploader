@@ -25,9 +25,12 @@ export default function HistoryPanel({ onClose }: Props) {
     loadHistory();
   }, []);
 
+  const [confirmClear, setConfirmClear] = useState(false);
+
   const handleClear = async () => {
     await window.api.clearHistory();
     setEntries([]);
+    setConfirmClear(false);
   };
 
   if (!loaded) return null;
@@ -37,8 +40,14 @@ export default function HistoryPanel({ onClose }: Props) {
       <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
         <div className="modal-header-row">
           <h3>上傳歷史紀錄</h3>
-          {entries.length > 0 && (
-            <button className="btn btn-secondary" onClick={handleClear}>清除全部</button>
+          {entries.length > 0 && !confirmClear && (
+            <button className="btn btn-secondary" onClick={() => setConfirmClear(true)}>清除全部</button>
+          )}
+          {confirmClear && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-danger" onClick={handleClear}>確認清除</button>
+              <button className="btn btn-secondary" onClick={() => setConfirmClear(false)}>取消</button>
+            </div>
           )}
         </div>
 

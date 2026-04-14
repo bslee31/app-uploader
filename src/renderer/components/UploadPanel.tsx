@@ -79,6 +79,7 @@ export default function UploadPanel({ project }: Props) {
     const result = await window.api.uploadGoogle(project.id, state.aabPath);
     update(project.id, {
       googleStatus: { projectId: project.id, platform: 'google', status: result.success ? 'success' : 'error', message: result.message },
+      ...(result.success && { aabPath: '' }),
     });
   };
 
@@ -95,6 +96,7 @@ export default function UploadPanel({ project }: Props) {
     const result = await window.api.uploadDsym(project.id, state.dsymPath);
     update(project.id, {
       firebaseStatus: { projectId: project.id, platform: 'firebase', status: result.success ? 'success' : 'error', message: result.message },
+      ...(result.success && { dsymPath: '' }),
     });
   };
 
@@ -106,6 +108,7 @@ export default function UploadPanel({ project }: Props) {
     const result = await window.api.uploadApple(project.id, state.ipaPath);
     update(project.id, {
       appleStatus: { projectId: project.id, platform: 'apple', status: result.success ? 'success' : 'error', message: result.message },
+      ...(result.success && { ipaPath: '' }),
     });
   };
 
@@ -129,7 +132,18 @@ export default function UploadPanel({ project }: Props) {
     <div className="upload-sections">
       {/* Apple */}
       <div className="section">
-        <div className="section-title">Apple</div>
+        <div className="section-title">
+          <span>Apple</span>
+          {project.apple && (
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={handleQueryApple}
+              disabled={state.appleQuerying}
+            >
+              {state.appleQuerying ? '查詢中...' : '查詢版本'}
+            </button>
+          )}
+        </div>
         {!project.apple ? (
           <p style={{ color: '#a0a0a0', fontSize: 13 }}>尚未設定 Apple</p>
         ) : (
@@ -138,20 +152,13 @@ export default function UploadPanel({ project }: Props) {
               <button className="btn btn-secondary" onClick={handleSelectIpa} disabled={isAppleUploading}>
                 選擇 IPA
               </button>
-              <div className="file-path-inline">{state.ipaPath || '尚未選擇檔案'}</div>
+              <div className="file-path-inline" title={state.ipaPath || undefined}>{state.ipaPath || '尚未選擇檔案'}</div>
               <button
                 className="btn btn-primary"
                 onClick={handleUploadApple}
                 disabled={!state.ipaPath || isAppleUploading}
               >
                 {isAppleUploading ? '上傳中...' : '上傳'}
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={handleQueryApple}
-                disabled={state.appleQuerying}
-              >
-                {state.appleQuerying ? '查詢中...' : '查詢版本'}
               </button>
             </div>
             {state.appleStatus.status !== 'idle' && (
@@ -174,7 +181,7 @@ export default function UploadPanel({ project }: Props) {
                   <button className="btn btn-secondary" onClick={handleSelectDsym} disabled={isFirebaseUploading}>
                     選擇 dSYM
                   </button>
-                  <div className="file-path-inline">{state.dsymPath || '尚未選擇檔案'}</div>
+                  <div className="file-path-inline" title={state.dsymPath || undefined}>{state.dsymPath || '尚未選擇檔案'}</div>
                   <button
                     className="btn btn-primary"
                     onClick={handleUploadDsym}
@@ -201,7 +208,18 @@ export default function UploadPanel({ project }: Props) {
 
       {/* Google Play */}
       <div className="section">
-        <div className="section-title">Google Play</div>
+        <div className="section-title">
+          <span>Google Play</span>
+          {project.google && (
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={handleQueryGoogle}
+              disabled={state.googleQuerying}
+            >
+              {state.googleQuerying ? '查詢中...' : '查詢版本'}
+            </button>
+          )}
+        </div>
         {!project.google ? (
           <p style={{ color: '#a0a0a0', fontSize: 13 }}>尚未設定 Google Play</p>
         ) : (
@@ -210,20 +228,13 @@ export default function UploadPanel({ project }: Props) {
               <button className="btn btn-secondary" onClick={handleSelectAab} disabled={isGoogleUploading}>
                 選擇 AAB
               </button>
-              <div className="file-path-inline">{state.aabPath || '尚未選擇檔案'}</div>
+              <div className="file-path-inline" title={state.aabPath || undefined}>{state.aabPath || '尚未選擇檔案'}</div>
               <button
                 className="btn btn-primary"
                 onClick={handleUploadGoogle}
                 disabled={!state.aabPath || isGoogleUploading}
               >
                 {isGoogleUploading ? '上傳中...' : '上傳'}
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={handleQueryGoogle}
-                disabled={state.googleQuerying}
-              >
-                {state.googleQuerying ? '查詢中...' : '查詢版本'}
               </button>
             </div>
             {state.googleStatus.status !== 'idle' && (

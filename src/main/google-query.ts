@@ -22,9 +22,11 @@ export class GoogleQuery {
     const publisher = google.androidpublisher({ version: 'v3', auth });
     const packageName = this.config.packageName;
 
+    let editId: string | null = null;
+
     try {
       const editResponse = await publisher.edits.insert({ packageName, requestBody: {} });
-      const editId = editResponse.data.id!;
+      editId = editResponse.data.id!;
 
       // Get all uploaded bundles
       const bundlesResponse = await publisher.edits.bundles.list({ packageName, editId });
@@ -47,8 +49,6 @@ export class GoogleQuery {
         }
       }
 
-      await publisher.edits.delete({ packageName, editId });
-
       if (bundles.length === 0) {
         return { success: true, message: '目前沒有任何 bundle', builds: [] };
       }
@@ -69,6 +69,10 @@ export class GoogleQuery {
       return { success: true, message: `找到 ${builds.length} 個版本`, builds };
     } catch (err: any) {
       return { success: false, message: `查詢失敗: ${err.message}`, builds: [] };
+    } finally {
+      if (editId) {
+        try { await publisher.edits.delete({ packageName, editId }); } catch {}
+      }
     }
   }
 }

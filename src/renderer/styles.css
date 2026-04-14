@@ -221,6 +221,11 @@ body {
   color: white;
 }
 
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
 /* Forms */
 .form-group {
   margin-bottom: 16px;
@@ -278,6 +283,9 @@ body {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .subsection-title {
