@@ -38,6 +38,16 @@ contextBridge.exposeInMainWorld('api', {
   queryGoogle: (projectId: string) => ipcRenderer.invoke('query:google', projectId),
   queryApple: (projectId: string) => ipcRenderer.invoke('query:apple', projectId),
 
+  // Shell
+  openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url),
+
+  // Update check listener
+  onUpdateAvailable: (callback: (data: { version: string; url: string }) => void) => {
+    const listener = (_event: any, data: any) => callback(data);
+    ipcRenderer.on('update:available', listener);
+    return () => ipcRenderer.removeListener('update:available', listener);
+  },
+
   // Notification listener
   onUploadNotification: (callback: (data: { title: string; body: string }) => void) => {
     const listener = (_event: any, data: any) => callback(data);

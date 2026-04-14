@@ -14,6 +14,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<{ version: string; url: string } | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dragItemId = useRef<string | null>(null);
 
@@ -25,6 +26,13 @@ export default function App() {
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);
+
+  useEffect(() => {
+    const unsubscribe = window.api.onUpdateAvailable((data) => {
+      setUpdateInfo(data);
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     Notification.requestPermission();
@@ -184,6 +192,15 @@ export default function App() {
       </div>
 
       <div className="main">
+        {updateInfo && (
+          <div className="update-banner">
+            <span>有新版本 v{updateInfo.version} 可用</span>
+            <button className="btn btn-primary btn-sm" onClick={() => window.api.openExternal(updateInfo.url)}>
+              前往下載
+            </button>
+            <button className="icon-btn" onClick={() => setUpdateInfo(null)} style={{ color: '#fff', fontSize: 16 }}>×</button>
+          </div>
+        )}
         {selectedProject ? (
           <>
             <div className="main-header">

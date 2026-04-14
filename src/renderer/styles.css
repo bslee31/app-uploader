@@ -158,6 +158,17 @@ body {
   background: #0f3460;
 }
 
+/* Update banner */
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #0f3460;
+  color: #74b9ff;
+  font-size: 13px;
+}
+
 /* Main content */
 .main {
   flex: 1;

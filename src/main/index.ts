@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import fs from 'fs';
+import https from 'https';
 import path from 'path';
 import { ProjectStore } from './project-store';
 import { GoogleUploader } from './google-uploader';
@@ -25,6 +26,30 @@ function recordUpload(projectName: string, platform: string, fileName: string, s
   });
 }
 
+const GITHUB_REPO = 'bslee31/app-uploader';
+
+function checkForUpdates() {
+  const currentVersion = app.getVersion();
+  const url = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+
+  https.get(url, { headers: { 'User-Agent': 'App-Uploader' } }, (res) => {
+    let data = '';
+    res.on('data', chunk => data += chunk);
+    res.on('end', () => {
+      try {
+        const release = JSON.parse(data);
+        const latestVersion = (release.tag_name || '').replace(/^v/, '');
+        if (latestVersion && latestVersion !== currentVersion) {
+          mainWindow?.webContents.send('update:available', {
+            version: latestVersion,
+            url: release.html_url,
+          });
+        }
+      } catch {}
+    });
+  }).on('error', () => {});
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -41,6 +66,10 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    checkForUpdates();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -91,6 +120,9 @@ ipcMain.handle('settings:update', (_event, data) => settingsStore.update(data));
 // Upload history
 ipcMain.handle('history:list', () => historyStore.list());
 ipcMain.handle('history:clear', () => historyStore.clear());
+
+// Open external URL
+ipcMain.handle('shell:openExternal', (_event, url: string) => shell.openExternal(url));
 
 // Export / Import
 ipcMain.handle('config:export', async () => {
