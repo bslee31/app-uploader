@@ -7,7 +7,6 @@ contextBridge.exposeInMainWorld('api', {
 
   // Project CRUD
   listProjects: () => ipcRenderer.invoke('project:list'),
-  getProject: (id: string) => ipcRenderer.invoke('project:get', id),
   createProject: (project: any) => ipcRenderer.invoke('project:create', project),
   updateProject: (id: string, data: any) => ipcRenderer.invoke('project:update', id, data),
   deleteProject: (id: string) => ipcRenderer.invoke('project:delete', id),

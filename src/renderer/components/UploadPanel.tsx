@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Project, UploadProgress, QueryResult, BuildInfo } from '../../shared/types';
+import { Project, UploadProgress, QueryResult } from '../../shared/types';
 
 interface ProjectUploadState {
   aabPath: string;

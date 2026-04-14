@@ -55,7 +55,6 @@ ipcMain.handle('dialog:openFile', async (_event, filters: { name: string; extens
 
 // Project CRUD
 ipcMain.handle('project:list', () => projectStore.list());
-ipcMain.handle('project:get', (_event, id: string) => projectStore.get(id));
 ipcMain.handle('project:create', (_event, project) => projectStore.create(project));
 ipcMain.handle('project:update', (_event, id: string, data) => projectStore.update(id, data));
 ipcMain.handle('project:delete', (_event, id: string) => projectStore.delete(id));
