@@ -90,6 +90,12 @@ export class ProjectStore {
     return this.projects[index];
   }
 
+  reorder(orderedIds: string[]) {
+    const map = new Map(this.projects.map(p => [p.id, p]));
+    this.projects = orderedIds.map(id => map.get(id)!).filter(Boolean);
+    this.save();
+  }
+
   delete(id: string): boolean {
     const index = this.projects.findIndex(p => p.id === id);
     if (index === -1) return false;

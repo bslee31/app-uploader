@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('api', {
   createProject: (project: any) => ipcRenderer.invoke('project:create', project),
   updateProject: (id: string, data: any) => ipcRenderer.invoke('project:update', id, data),
   deleteProject: (id: string) => ipcRenderer.invoke('project:delete', id),
+  reorderProjects: (orderedIds: string[]) => ipcRenderer.invoke('project:reorder', orderedIds),
 
   // Upload
   uploadGoogle: (projectId: string, aabPath: string) =>

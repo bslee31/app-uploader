@@ -59,6 +59,7 @@ ipcMain.handle('project:get', (_event, id: string) => projectStore.get(id));
 ipcMain.handle('project:create', (_event, project) => projectStore.create(project));
 ipcMain.handle('project:update', (_event, id: string, data) => projectStore.update(id, data));
 ipcMain.handle('project:delete', (_event, id: string) => projectStore.delete(id));
+ipcMain.handle('project:reorder', (_event, orderedIds: string[]) => projectStore.reorder(orderedIds));
 
 // Google Play upload
 ipcMain.handle('upload:google', async (event, projectId: string, aabPath: string) => {

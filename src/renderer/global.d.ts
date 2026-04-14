@@ -9,6 +9,7 @@ declare global {
       createProject: (project: any) => Promise<import('../shared/types').Project>;
       updateProject: (id: string, data: any) => Promise<import('../shared/types').Project | null>;
       deleteProject: (id: string) => Promise<boolean>;
+      reorderProjects: (orderedIds: string[]) => Promise<void>;
       uploadGoogle: (projectId: string, aabPath: string) => Promise<import('../shared/types').UploadResult>;
       uploadApple: (projectId: string, ipaPath: string) => Promise<import('../shared/types').UploadResult>;
       queryGoogle: (projectId: string) => Promise<import('../shared/types').QueryResult>;

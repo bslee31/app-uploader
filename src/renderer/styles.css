@@ -68,6 +68,11 @@ body {
   background: #0f3460;
 }
 
+.sidebar-item.drag-over {
+  border-top: 2px solid #e94560;
+  padding-top: 8px;
+}
+
 .sidebar-item.active {
   background: #e94560;
   color: white;

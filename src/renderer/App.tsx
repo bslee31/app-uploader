@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Project } from '../shared/types';
 import ProjectForm from './components/ProjectForm';
 import UploadPanel from './components/UploadPanel';
@@ -8,6 +8,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const dragItemId = useRef<string | null>(null);
 
   const loadProjects = useCallback(async () => {
     const list = await window.api.listProjects();
@@ -36,6 +38,40 @@ export default function App() {
 
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  const handleDragStart = (id: string) => {
+    dragItemId.current = id;
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    if (dragItemId.current !== id) {
+      setDragOverId(id);
+    }
+  };
+
+  const handleDrop = async (targetId: string) => {
+    setDragOverId(null);
+    const fromId = dragItemId.current;
+    dragItemId.current = null;
+    if (!fromId || fromId === targetId) return;
+
+    const fromIndex = projects.findIndex(p => p.id === fromId);
+    const toIndex = projects.findIndex(p => p.id === targetId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const reordered = [...projects];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+
+    setProjects(reordered);
+    await window.api.reorderProjects(reordered.map(p => p.id));
+  };
+
+  const handleDragEnd = () => {
+    dragItemId.current = null;
+    setDragOverId(null);
+  };
+
   const handleDelete = async (id: string) => {
     await window.api.deleteProject(id);
     if (selectedId === id) setSelectedId(null);
@@ -51,8 +87,14 @@ export default function App() {
           {projects.map(p => (
             <div
               key={p.id}
-              className={`sidebar-item ${selectedId === p.id ? 'active' : ''}`}
+              className={`sidebar-item ${selectedId === p.id ? 'active' : ''} ${dragOverId === p.id ? 'drag-over' : ''}`}
+              draggable
               onClick={() => setSelectedId(p.id)}
+              onDragStart={() => handleDragStart(p.id)}
+              onDragOver={(e) => handleDragOver(e, p.id)}
+              onDragLeave={() => setDragOverId(null)}
+              onDrop={() => handleDrop(p.id)}
+              onDragEnd={handleDragEnd}
             >
               {p.name}
             </div>
