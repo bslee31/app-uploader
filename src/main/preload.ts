@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld('api', {
   // File dialog
   openFile: (filters: { name: string; extensions: string[] }[]) =>
     ipcRenderer.invoke('dialog:openFile', filters),
+  openFileOrDirectory: () =>
+    ipcRenderer.invoke('dialog:openFileOrDirectory'),
 
   // Project CRUD
   listProjects: () => ipcRenderer.invoke('project:list'),

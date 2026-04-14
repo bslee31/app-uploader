@@ -83,7 +83,7 @@ export default function UploadPanel({ project }: Props) {
   };
 
   const handleSelectDsym = async () => {
-    const path = await window.api.openFile([{ name: 'dSYM', extensions: ['zip', 'dSYM'] }]);
+    const path = await window.api.openFileOrDirectory();
     if (path) update(project.id, { dsymPath: path });
   };
 

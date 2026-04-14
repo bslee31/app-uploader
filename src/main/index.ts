@@ -56,6 +56,14 @@ ipcMain.handle('dialog:openFile', async (_event, filters: { name: string; extens
   return result.filePaths[0];
 });
 
+ipcMain.handle('dialog:openFileOrDirectory', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile', 'openDirectory'],
+  });
+  if (result.canceled) return null;
+  return result.filePaths[0];
+});
+
 // Project CRUD
 ipcMain.handle('project:list', () => projectStore.list());
 ipcMain.handle('project:create', (_event, project) => projectStore.create(project));

@@ -17,7 +17,7 @@ export default function SettingsForm({ onClose }: Props) {
   }, []);
 
   const handleSelectUploadSymbols = async () => {
-    const path = await window.api.openFile([{ name: 'upload-symbols', extensions: ['*'] }]);
+    const path = await window.api.openFileOrDirectory();
     if (path) setUploadSymbolsPath(path);
   };
 

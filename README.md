@@ -1,16 +1,17 @@
 # App Uploader
 
-桌面應用程式，用於上傳 App 到 Google Play Console 和 Apple TestFlight。
+桌面應用程式，上傳 IPA 到 TestFlight 和 AAB 到 Google Play，並可查詢版本資訊。
 
 ## 功能
 
-- 上傳 AAB 到 Google Play Console 內部測試軌道
 - 上傳 IPA 到 Apple App Store Connect (TestFlight)
-- 專案管理：不同的 App 各自設定 Apple / Google 的認證資訊
-- 上傳進度條：Google Play 顯示步驟百分比，Apple 顯示動畫進度
+- 上傳 AAB 到 Google Play Console 內部測試軌道
+- 上傳 dSYM 到 Firebase Crashlytics
 - 版本查詢：查詢 Apple builds 和 Google Play bundles
+- 上傳進度條：Google Play 顯示步驟百分比，Apple / Firebase 顯示動畫進度
+- 專案管理：不同的 App 各自設定認證資訊
 - 專案拖曳排序
-- 刪除專案確認視窗
+- 全域設定：upload-symbols 路徑等共用設定
 
 ## 技術棧
 
@@ -20,12 +21,14 @@
 - Google Play Developer API (`googleapis`)
 - Apple App Store Connect API（JWT 認證，用於版本查詢）
 - Apple `xcrun altool`（API Key 認證，用於上傳）
+- Firebase Crashlytics `upload-symbols`（用於 dSYM 上傳）
 
 ## 環境需求
 
 - macOS（Apple 上傳僅支援 macOS）
 - Node.js >= 20
 - Xcode Command Line Tools（用於 `xcrun altool`）
+- Firebase iOS SDK 的 `upload-symbols`（用於 dSYM 上傳，見下方說明）
 
 ## 安裝
 
@@ -51,6 +54,24 @@ npm run dist
 
 ## 設定說明
 
+### 全域設定
+
+點擊 sidebar 標題列的 ⚙ 齒輪按鈕開啟全域設定：
+
+- **upload-symbols 路徑**：Firebase Crashlytics dSYM 上傳需要的執行檔，所有專案共用
+
+取得 `upload-symbols`：
+
+```bash
+# 從 GitHub 下載
+curl -O https://raw.githubusercontent.com/firebase/firebase-ios-sdk/main/Crashlytics/upload-symbols
+chmod +x upload-symbols
+```
+
+或從你的 iOS 專案中取得：
+- CocoaPods：`Pods/FirebaseCrashlytics/upload-symbols`
+- SPM：`SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols`
+
 ### Apple
 
 需要從 [App Store Connect](https://appstoreconnect.apple.com) 取得 API Key：
@@ -65,6 +86,7 @@ npm run dist
 - **Issuer ID**
 - **Bundle ID**（如 `com.example.app`，用於版本查詢）
 - **.p8 金鑰檔案**（選擇後會自動複製到 `~/.appstoreconnect/private_keys/`）
+- **GoogleService-Info.plist**（選填，用於 dSYM 上傳到 Firebase Crashlytics）
 
 ### Google Play
 
@@ -84,20 +106,23 @@ npm run dist
 
 ```
 src/
-├── main/                  # Electron 主程序
-│   ├── index.ts           # 視窗管理 + IPC handlers
-│   ├── preload.ts         # Context Bridge
-│   ├── project-store.ts   # 專案設定 CRUD + 排序
-│   ├── google-uploader.ts # Google Play API 上傳
-│   ├── apple-uploader.ts  # xcrun altool 上傳
-│   ├── google-query.ts    # Google Play 版本查詢
-│   └── apple-query.ts     # App Store Connect 版本查詢
-├── renderer/              # UI
-│   ├── App.tsx            # 主介面
+├── main/                    # Electron 主程序
+│   ├── index.ts             # 視窗管理 + IPC handlers
+│   ├── preload.ts           # Context Bridge
+│   ├── project-store.ts     # 專案設定 CRUD + 排序
+│   ├── settings-store.ts    # 全域設定
+│   ├── google-uploader.ts   # Google Play API 上傳
+│   ├── apple-uploader.ts    # xcrun altool 上傳
+│   ├── firebase-uploader.ts # Firebase Crashlytics dSYM 上傳
+│   ├── google-query.ts      # Google Play 版本查詢
+│   └── apple-query.ts       # App Store Connect 版本查詢
+├── renderer/                # UI
+│   ├── App.tsx              # 主介面
 │   ├── components/
-│   │   ├── ProjectForm.tsx  # 專案新增/編輯/刪除表單
-│   │   └── UploadPanel.tsx  # 上傳介面 + 版本查詢
+│   │   ├── ProjectForm.tsx    # 專案新增/編輯/刪除表單
+│   │   ├── UploadPanel.tsx    # 上傳介面 + 版本查詢
+│   │   └── SettingsForm.tsx   # 全域設定表單
 │   └── styles.css
 └── shared/
-    └── types.ts           # 共用型別
+    └── types.ts             # 共用型別
 ```

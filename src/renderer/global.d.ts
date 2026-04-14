@@ -4,6 +4,7 @@ declare global {
   interface Window {
     api: {
       openFile: (filters: { name: string; extensions: string[] }[]) => Promise<string | null>;
+      openFileOrDirectory: () => Promise<string | null>;
       listProjects: () => Promise<import('../shared/types').Project[]>;
       createProject: (project: any) => Promise<import('../shared/types').Project>;
       updateProject: (id: string, data: any) => Promise<import('../shared/types').Project | null>;
