@@ -9,6 +9,7 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const dragItemId = useRef<string | null>(null);
 
   const loadProjects = useCallback(async () => {
@@ -36,8 +37,16 @@ export default function App() {
     setShowForm(false);
   };
 
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const handleDelete = async (id: string) => {
+    await window.api.deleteProject(id);
+    if (selectedId === id) setSelectedId(null);
+    setConfirmDeleteId(null);
+    setShowForm(false);
+    setEditingProject(null);
+    await loadProjects();
+  };
 
+  // Drag and drop
   const handleDragStart = (id: string) => {
     dragItemId.current = id;
   };
@@ -72,17 +81,19 @@ export default function App() {
     setDragOverId(null);
   };
 
-  const handleDelete = async (id: string) => {
-    await window.api.deleteProject(id);
-    if (selectedId === id) setSelectedId(null);
-    setConfirmDeleteId(null);
-    await loadProjects();
-  };
-
   return (
     <div className="app">
       <div className="sidebar">
-        <div className="sidebar-header">App Uploader</div>
+        <div className="sidebar-header">
+          <span>App Uploader</span>
+          <button
+            className="icon-btn"
+            onClick={() => { setEditingProject(null); setShowForm(true); }}
+            title="新增專案"
+          >
+            +
+          </button>
+        </div>
         <div className="sidebar-list">
           {projects.map(p => (
             <div
@@ -96,17 +107,9 @@ export default function App() {
               onDrop={() => handleDrop(p.id)}
               onDragEnd={handleDragEnd}
             >
-              {p.name}
+              <span className="sidebar-item-name">{p.name}</span>
             </div>
           ))}
-        </div>
-        <div className="sidebar-footer">
-          <button
-            className="btn btn-primary btn-full"
-            onClick={() => { setEditingProject(null); setShowForm(true); }}
-          >
-            + 新增專案
-          </button>
         </div>
       </div>
 
@@ -115,27 +118,16 @@ export default function App() {
           <>
             <div className="main-header">
               <h2>{selectedProject.name}</h2>
+              <button
+                className="icon-btn"
+                onClick={() => { setEditingProject(selectedProject); setShowForm(true); }}
+                title="編輯設定"
+              >
+                ⚙
+              </button>
             </div>
             <div className="main-content">
               <UploadPanel project={selectedProject} />
-
-              <div className="section">
-                <div className="section-title">專案設定</div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => { setEditingProject(selectedProject); setShowForm(true); }}
-                  >
-                    編輯設定
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => setConfirmDeleteId(selectedProject.id)}
-                  >
-                    刪除專案
-                  </button>
-                </div>
-              </div>
             </div>
           </>
         ) : (
@@ -169,6 +161,7 @@ export default function App() {
           project={editingProject}
           onSubmit={editingProject ? handleUpdate : handleCreate}
           onCancel={() => { setShowForm(false); setEditingProject(null); }}
+          onDelete={editingProject ? () => { setShowForm(false); setConfirmDeleteId(editingProject.id); } : undefined}
         />
       )}
     </div>

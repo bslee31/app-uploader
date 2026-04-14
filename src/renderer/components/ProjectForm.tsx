@@ -5,9 +5,10 @@ interface Props {
   project: Project | null;
   onSubmit: (data: any) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
-export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
+export default function ProjectForm({ project, onSubmit, onCancel, onDelete }: Props) {
   const [name, setName] = useState(project?.name || '');
   const [apiKeyId, setApiKeyId] = useState(project?.apple?.apiKeyId || '');
   const [issuerId, setIssuerId] = useState(project?.apple?.issuerId || '');
@@ -116,11 +117,16 @@ export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
           </p>
         )}
 
-        <div className="modal-actions">
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={!name.trim() || hasIncomplete}>
-            {project ? '儲存' : '建立'}
-          </button>
-          <button className="btn btn-secondary" onClick={onCancel}>取消</button>
+        <div className="modal-actions-split">
+          <div className="modal-actions">
+            <button className="btn btn-primary" onClick={handleSubmit} disabled={!name.trim() || hasIncomplete}>
+              {project ? '儲存' : '建立'}
+            </button>
+            <button className="btn btn-secondary" onClick={onCancel}>取消</button>
+          </div>
+          {onDelete && (
+            <button className="btn btn-danger" onClick={onDelete}>刪除專案</button>
+          )}
         </div>
       </div>
     </div>
