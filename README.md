@@ -7,6 +7,10 @@
 - 上傳 AAB 到 Google Play Console 內部測試軌道
 - 上傳 IPA 到 Apple App Store Connect (TestFlight)
 - 專案管理：不同的 App 各自設定 Apple / Google 的認證資訊
+- 上傳進度條：Google Play 顯示步驟百分比，Apple 顯示動畫進度
+- 版本查詢：查詢 Apple builds 和 Google Play bundles
+- 專案拖曳排序
+- 刪除專案確認視窗
 
 ## 技術棧
 
@@ -14,7 +18,8 @@
 - React
 - TypeScript
 - Google Play Developer API (`googleapis`)
-- Apple `xcrun altool`（API Key 認證）
+- Apple App Store Connect API（JWT 認證，用於版本查詢）
+- Apple `xcrun altool`（API Key 認證，用於上傳）
 
 ## 環境需求
 
@@ -55,7 +60,11 @@ npm run dist
 3. 記下 **API Key ID** 和 **Issuer ID**
 4. 下載 `.p8` 金鑰檔案（只能下載一次）
 
-在工具中建立專案並選擇 `.p8` 檔案後，會自動複製到 `~/.appstoreconnect/private_keys/`。
+在工具中建立專案時需填寫：
+- **API Key ID**
+- **Issuer ID**
+- **Bundle ID**（如 `com.example.app`，用於版本查詢）
+- **.p8 金鑰檔案**（選擇後會自動複製到 `~/.appstoreconnect/private_keys/`）
 
 ### Google Play
 
@@ -78,14 +87,16 @@ src/
 ├── main/                  # Electron 主程序
 │   ├── index.ts           # 視窗管理 + IPC handlers
 │   ├── preload.ts         # Context Bridge
-│   ├── project-store.ts   # 專案設定 CRUD
+│   ├── project-store.ts   # 專案設定 CRUD + 排序
 │   ├── google-uploader.ts # Google Play API 上傳
-│   └── apple-uploader.ts  # xcrun altool 上傳
+│   ├── apple-uploader.ts  # xcrun altool 上傳
+│   ├── google-query.ts    # Google Play 版本查詢
+│   └── apple-query.ts     # App Store Connect 版本查詢
 ├── renderer/              # UI
 │   ├── App.tsx            # 主介面
 │   ├── components/
-│   │   ├── ProjectForm.tsx  # 專案設定表單
-│   │   └── UploadPanel.tsx  # 上傳介面
+│   │   ├── ProjectForm.tsx  # 專案新增/編輯/刪除表單
+│   │   └── UploadPanel.tsx  # 上傳介面 + 版本查詢
 │   └── styles.css
 └── shared/
     └── types.ts           # 共用型別
