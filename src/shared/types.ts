@@ -2,6 +2,7 @@ export interface AppleConfig {
   apiKeyId: string;
   issuerId: string;
   p8KeyPath: string;
+  bundleId: string;
 }
 
 export type GoogleReleaseStatus = 'completed' | 'draft';
@@ -26,6 +27,19 @@ export interface UploadResult {
   message: string;
   platform: 'apple' | 'google';
   timestamp: string;
+}
+
+export interface BuildInfo {
+  version: string;
+  buildNumber: string;
+  status: string;
+  updatedAt: string;
+}
+
+export interface QueryResult {
+  success: boolean;
+  message: string;
+  builds: BuildInfo[];
 }
 
 export interface UploadProgress {

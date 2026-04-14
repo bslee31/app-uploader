@@ -3,6 +3,8 @@ import path from 'path';
 import { ProjectStore } from './project-store';
 import { GoogleUploader } from './google-uploader';
 import { AppleUploader } from './apple-uploader';
+import { GoogleQuery } from './google-query';
+import { AppleQuery } from './apple-query';
 
 let mainWindow: BrowserWindow | null = null;
 const projectStore = new ProjectStore();
@@ -94,4 +96,26 @@ ipcMain.handle('upload:apple', async (event, projectId: string, ipaPath: string)
   } catch (err: any) {
     return { success: false, message: err.message, platform: 'apple', timestamp: new Date().toISOString() };
   }
+});
+
+// Query builds
+ipcMain.handle('query:google', async (_event, projectId: string) => {
+  const project = projectStore.get(projectId);
+  if (!project?.google) {
+    return { success: false, message: 'Google Play 設定不完整', builds: [] };
+  }
+  const query = new GoogleQuery(project.google);
+  return query.listBundles();
+});
+
+ipcMain.handle('query:apple', async (_event, projectId: string) => {
+  const project = projectStore.get(projectId);
+  if (!project?.apple) {
+    return { success: false, message: 'Apple 設定不完整', builds: [] };
+  }
+  if (!project.apple.bundleId) {
+    return { success: false, message: '請先在專案設定中填寫 Bundle ID', builds: [] };
+  }
+  const query = new AppleQuery(project.apple);
+  return query.listBuilds();
 });

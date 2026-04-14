@@ -282,6 +282,38 @@ body {
   100% { transform: translateX(350%); }
 }
 
+/* Build table */
+.build-table-wrapper {
+  margin-top: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #0f3460;
+}
+
+.build-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.build-table th {
+  background: #0f3460;
+  color: #a0a0a0;
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+}
+
+.build-table td {
+  padding: 8px 12px;
+  border-top: 1px solid #0f3460;
+  color: #e0e0e0;
+}
+
+.build-table tr:hover td {
+  background: rgba(15, 52, 96, 0.3);
+}
+
 /* Empty state */
 .empty-state {
   display: flex;

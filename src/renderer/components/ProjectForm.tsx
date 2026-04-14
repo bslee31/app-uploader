@@ -12,6 +12,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
   const [apiKeyId, setApiKeyId] = useState(project?.apple?.apiKeyId || '');
   const [issuerId, setIssuerId] = useState(project?.apple?.issuerId || '');
   const [p8KeyPath, setP8KeyPath] = useState(project?.apple?.p8KeyPath || '');
+  const [bundleId, setBundleId] = useState(project?.apple?.bundleId || '');
   const [serviceAccountKeyPath, setServiceAccountKeyPath] = useState(project?.google?.serviceAccountKeyPath || '');
   const [packageName, setPackageName] = useState(project?.google?.packageName || '');
   const [releaseStatus, setReleaseStatus] = useState<GoogleReleaseStatus>(project?.google?.releaseStatus || 'draft');
@@ -26,7 +27,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
     if (path) setServiceAccountKeyPath(path);
   };
 
-  const appleFields = [apiKeyId, issuerId, p8KeyPath];
+  const appleFields = [apiKeyId, issuerId, p8KeyPath, bundleId];
   const appleSome = appleFields.some(f => f.trim());
   const appleComplete = appleFields.every(f => f.trim());
 
@@ -40,7 +41,7 @@ export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
     const data: any = { name };
 
     if (appleComplete) {
-      data.apple = { apiKeyId, issuerId, p8KeyPath };
+      data.apple = { apiKeyId, issuerId, p8KeyPath, bundleId };
     }
 
     if (googleComplete) {
@@ -70,6 +71,11 @@ export default function ProjectForm({ project, onSubmit, onCancel }: Props) {
         <div className="form-group">
           <label>Issuer ID</label>
           <input value={issuerId} onChange={e => setIssuerId(e.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+        </div>
+
+        <div className="form-group">
+          <label>Bundle ID</label>
+          <input value={bundleId} onChange={e => setBundleId(e.target.value)} placeholder="com.example.app" />
         </div>
 
         <div className="form-group">

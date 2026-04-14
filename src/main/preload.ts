@@ -18,6 +18,10 @@ contextBridge.exposeInMainWorld('api', {
   uploadApple: (projectId: string, ipaPath: string) =>
     ipcRenderer.invoke('upload:apple', projectId, ipaPath),
 
+  // Query builds
+  queryGoogle: (projectId: string) => ipcRenderer.invoke('query:google', projectId),
+  queryApple: (projectId: string) => ipcRenderer.invoke('query:apple', projectId),
+
   // Upload progress listener
   onUploadProgress: (callback: (progress: any) => void) => {
     const listener = (_event: any, progress: any) => callback(progress);

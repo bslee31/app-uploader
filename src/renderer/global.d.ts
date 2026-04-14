@@ -11,6 +11,8 @@ declare global {
       deleteProject: (id: string) => Promise<boolean>;
       uploadGoogle: (projectId: string, aabPath: string) => Promise<import('../shared/types').UploadResult>;
       uploadApple: (projectId: string, ipaPath: string) => Promise<import('../shared/types').UploadResult>;
+      queryGoogle: (projectId: string) => Promise<import('../shared/types').QueryResult>;
+      queryApple: (projectId: string) => Promise<import('../shared/types').QueryResult>;
       onUploadProgress: (callback: (progress: import('../shared/types').UploadProgress) => void) => () => void;
     };
   }
