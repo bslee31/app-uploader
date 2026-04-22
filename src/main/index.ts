@@ -4,6 +4,7 @@ import https from 'https';
 import path from 'path';
 import { ProjectStore } from './project-store';
 import { GoogleUploader } from './google-uploader';
+import { inspectAab } from './aab-parser';
 import { AppleUploader } from './apple-uploader';
 import { GoogleQuery } from './google-query';
 import { AppleQuery } from './apple-query';
@@ -162,6 +163,15 @@ ipcMain.handle('config:import', async () => {
     return { success: true, message: `已匯入 ${data.projects.length} 個專案` };
   } catch {
     return { success: false, message: '無法讀取設定檔' };
+  }
+});
+
+// Inspect AAB (versionCode / versionName preview)
+ipcMain.handle('aab:inspect', (_event, aabPath: string) => {
+  try {
+    return inspectAab(aabPath);
+  } catch {
+    return { versionCode: null, versionName: null };
   }
 });
 

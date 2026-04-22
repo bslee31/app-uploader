@@ -26,6 +26,9 @@ contextBridge.exposeInMainWorld('api', {
   listHistory: () => ipcRenderer.invoke('history:list'),
   clearHistory: () => ipcRenderer.invoke('history:clear'),
 
+  // AAB inspection
+  inspectAab: (aabPath: string) => ipcRenderer.invoke('aab:inspect', aabPath),
+
   // Upload
   uploadGoogle: (projectId: string, aabPath: string) =>
     ipcRenderer.invoke('upload:google', projectId, aabPath),

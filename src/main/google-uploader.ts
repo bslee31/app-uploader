@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import fs from 'fs';
 import { GoogleConfig, UploadResult } from '../shared/types';
+import { extractVersionNameFromAab } from './aab-parser';
 
 export class GoogleUploader {
   private config: GoogleConfig;
@@ -49,6 +50,9 @@ export class GoogleUploader {
       });
       const versionCode = uploadResponse.data.versionCode;
 
+      const versionName = extractVersionNameFromAab(aabPath);
+      const releaseName = versionName ? `${versionCode} (${versionName})` : String(versionCode);
+
       // 3. Assign to internal track
       onProgress('正在指派到內部測試軌道...', 70);
       await publisher.edits.tracks.update({
@@ -59,6 +63,7 @@ export class GoogleUploader {
           track: 'internal',
           releases: [
             {
+              name: releaseName,
               versionCodes: [String(versionCode)],
               status: this.config.releaseStatus || 'draft',
             },

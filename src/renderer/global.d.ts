@@ -16,6 +16,7 @@ declare global {
       importConfig: () => Promise<{ success: boolean; message?: string }>;
       listHistory: () => Promise<import('../shared/types').HistoryEntry[]>;
       clearHistory: () => Promise<void>;
+      inspectAab: (aabPath: string) => Promise<{ versionCode: number | null; versionName: string | null }>;
       uploadGoogle: (projectId: string, aabPath: string) => Promise<import('../shared/types').UploadResult>;
       uploadApple: (projectId: string, ipaPath: string) => Promise<import('../shared/types').UploadResult>;
       uploadDsym: (projectId: string, dsymPath: string) => Promise<import('../shared/types').UploadResult>;

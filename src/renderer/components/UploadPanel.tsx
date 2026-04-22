@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Project, UploadProgress, QueryResult } from '../../shared/types';
 
+interface AabInfo {
+  versionCode: number | null;
+  versionName: string | null;
+}
+
 interface ProjectUploadState {
   aabPath: string;
+  aabInfo: AabInfo | null;
   ipaPath: string;
   dsymPath: string;
   googleStatus: UploadProgress;
@@ -17,6 +23,7 @@ interface ProjectUploadState {
 function defaultState(projectId: string): ProjectUploadState {
   return {
     aabPath: '',
+    aabInfo: null,
     ipaPath: '',
     dsymPath: '',
     googleStatus: { projectId, platform: 'google', status: 'idle', message: '' },
@@ -63,7 +70,10 @@ export default function UploadPanel({ project }: Props) {
 
   const handleSelectAab = async () => {
     const path = await window.api.openFile([{ name: 'Android App Bundle', extensions: ['aab'] }]);
-    if (path) update(project.id, { aabPath: path });
+    if (!path) return;
+    update(project.id, { aabPath: path, aabInfo: null });
+    const info = await window.api.inspectAab(path);
+    update(project.id, { aabInfo: info });
   };
 
   const handleSelectIpa = async () => {
@@ -79,7 +89,7 @@ export default function UploadPanel({ project }: Props) {
     const result = await window.api.uploadGoogle(project.id, state.aabPath);
     update(project.id, {
       googleStatus: { projectId: project.id, platform: 'google', status: result.success ? 'success' : 'error', message: result.message },
-      ...(result.success && { aabPath: '' }),
+      ...(result.success && { aabPath: '', aabInfo: null }),
     });
   };
 
@@ -237,6 +247,9 @@ export default function UploadPanel({ project }: Props) {
                 {isGoogleUploading ? '上傳中...' : '上傳'}
               </button>
             </div>
+            {state.aabPath && state.aabInfo && (
+              <AabPreview info={state.aabInfo} />
+            )}
             {state.googleStatus.status !== 'idle' && (
               <div className={`status ${state.googleStatus.status}`}>
                 {state.googleStatus.status === 'uploading' && state.googleStatus.progress !== undefined && state.googleStatus.progress >= 0 && (
@@ -288,6 +301,28 @@ function BuildTable({ result, platform }: { result: QueryResult; platform: 'appl
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function AabPreview({ info }: { info: AabInfo }) {
+  if (info.versionCode && info.versionName) {
+    return (
+      <div className="status" style={{ color: '#a0a0a0', fontSize: 12 }}>
+        發布名稱預覽：<strong style={{ color: '#d0d0d0' }}>{`${info.versionCode} (${info.versionName})`}</strong>
+      </div>
+    );
+  }
+  if (info.versionName) {
+    return (
+      <div className="status" style={{ color: '#a0a0a0', fontSize: 12 }}>
+        AAB versionName：<strong style={{ color: '#d0d0d0' }}>{info.versionName}</strong>（上傳後 Version Code 才會確定）
+      </div>
+    );
+  }
+  return (
+    <div className="status" style={{ color: '#a0a0a0', fontSize: 12 }}>
+      無法從 AAB 解析版本資訊
     </div>
   );
 }
