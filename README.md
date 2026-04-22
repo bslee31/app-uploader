@@ -5,7 +5,7 @@
 ## 功能
 
 - 上傳 IPA 到 Apple App Store Connect (TestFlight)
-- 上傳 AAB 到 Google Play Console 內部測試軌道
+- 上傳 AAB 到 Google Play Console 內部測試軌道（自動組出 `{versionCode} ({versionName})` 格式的 release name，與後台上傳一致；選擇 AAB 後即時顯示預覽）
 - 上傳 dSYM 到 Firebase Crashlytics
 - 版本查詢：查詢 Apple builds 和 Google Play bundles
 - 上傳進度條：Google Play 顯示步驟百分比，Apple / Firebase 顯示動畫進度
@@ -112,6 +112,7 @@ src/
 │   ├── project-store.ts     # 專案設定 CRUD + 排序
 │   ├── settings-store.ts    # 全域設定
 │   ├── google-uploader.ts   # Google Play API 上傳
+│   ├── aab-parser.ts        # 解析 AAB 取得 versionCode / versionName
 │   ├── apple-uploader.ts    # xcrun altool 上傳
 │   ├── firebase-uploader.ts # Firebase Crashlytics dSYM 上傳
 │   ├── google-query.ts      # Google Play 版本查詢
