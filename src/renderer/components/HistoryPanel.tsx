@@ -52,7 +52,7 @@ export default function HistoryPanel({ onClose }: Props) {
         </div>
 
         {entries.length === 0 ? (
-          <p style={{ color: '#a0a0a0', fontSize: 13 }}>尚無上傳紀錄</p>
+          <p style={{ color: '#9ca3af', fontSize: 13 }}>尚無上傳紀錄</p>
         ) : (
           <div className="build-table-wrapper">
             <table className="build-table">

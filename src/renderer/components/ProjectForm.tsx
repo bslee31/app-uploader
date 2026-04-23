@@ -125,7 +125,7 @@ export default function ProjectForm({ project, onSubmit, onCancel, onDelete }: P
         </div>
 
         {hasIncomplete && (
-          <p style={{ color: '#ff6b6b', fontSize: 13, marginTop: 12 }}>
+          <p style={{ color: '#f87171', fontSize: 13, marginTop: 12 }}>
             {appleSome && !appleComplete && 'Apple 設定不完整，請填寫所有欄位或全部清空。'}
             {googleSome && !googleComplete && 'Google Play 設定不完整，請填寫所有欄位或全部清空。'}
           </p>

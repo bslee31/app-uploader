@@ -198,7 +198,7 @@ export default function App() {
             <button className="btn btn-primary btn-sm" onClick={() => window.api.openExternal(updateInfo.url)}>
               前往下載
             </button>
-            <button className="icon-btn" onClick={() => setUpdateInfo(null)} style={{ color: '#fff', fontSize: 16 }}>×</button>
+            <button className="icon-btn" onClick={() => setUpdateInfo(null)} style={{ color: '#e5e7eb', fontSize: 16 }}>×</button>
           </div>
         )}
         {selectedProject ? (

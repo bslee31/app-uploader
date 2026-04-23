@@ -155,7 +155,7 @@ export default function UploadPanel({ project }: Props) {
           )}
         </div>
         {!project.apple ? (
-          <p style={{ color: '#a0a0a0', fontSize: 13 }}>尚未設定 Apple</p>
+          <p style={{ color: '#9ca3af', fontSize: 13 }}>尚未設定 Apple</p>
         ) : (
           <>
             <div className="upload-row">
@@ -231,7 +231,7 @@ export default function UploadPanel({ project }: Props) {
           )}
         </div>
         {!project.google ? (
-          <p style={{ color: '#a0a0a0', fontSize: 13 }}>尚未設定 Google Play</p>
+          <p style={{ color: '#9ca3af', fontSize: 13 }}>尚未設定 Google Play</p>
         ) : (
           <>
             <div className="upload-row">
@@ -308,20 +308,20 @@ function BuildTable({ result, platform }: { result: QueryResult; platform: 'appl
 function AabPreview({ info }: { info: AabInfo }) {
   if (info.versionCode && info.versionName) {
     return (
-      <div className="status" style={{ color: '#a0a0a0', fontSize: 12 }}>
-        發布名稱預覽：<strong style={{ color: '#d0d0d0' }}>{`${info.versionCode} (${info.versionName})`}</strong>
+      <div className="status" style={{ color: '#9ca3af', fontSize: 12 }}>
+        發布名稱預覽：<strong style={{ color: '#d1d5db' }}>{`${info.versionCode} (${info.versionName})`}</strong>
       </div>
     );
   }
   if (info.versionName) {
     return (
-      <div className="status" style={{ color: '#a0a0a0', fontSize: 12 }}>
-        AAB versionName：<strong style={{ color: '#d0d0d0' }}>{info.versionName}</strong>（上傳後 Version Code 才會確定）
+      <div className="status" style={{ color: '#9ca3af', fontSize: 12 }}>
+        AAB versionName：<strong style={{ color: '#d1d5db' }}>{info.versionName}</strong>（上傳後 Version Code 才會確定）
       </div>
     );
   }
   return (
-    <div className="status" style={{ color: '#a0a0a0', fontSize: 12 }}>
+    <div className="status" style={{ color: '#9ca3af', fontSize: 12 }}>
       無法從 AAB 解析版本資訊
     </div>
   );
