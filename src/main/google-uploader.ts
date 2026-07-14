@@ -3,6 +3,13 @@ import fs from 'fs';
 import { GoogleConfig, UploadResult } from '../shared/types';
 import { extractVersionNameFromAab } from './aab-parser';
 
+const RETRYABLE_NETWORK_ERRORS = ['ETIMEDOUT', 'ECONNRESET', 'EPIPE', 'ECONNABORTED', 'EAI_AGAIN', 'socket hang up', 'network timeout'];
+
+function isRetryableNetworkError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  return RETRYABLE_NETWORK_ERRORS.some((code) => message.includes(code));
+}
+
 export class GoogleUploader {
   private config: GoogleConfig;
 
@@ -32,23 +39,45 @@ export class GoogleUploader {
     const packageName = this.config.packageName;
 
     try {
-      // 1. Create edit
-      onProgress('正在建立編輯工作階段...', 20);
-      const editResponse = await publisher.edits.insert({ packageName, requestBody: {} });
-      const editId = editResponse.data.id!;
+      const fileSize = fs.statSync(aabPath).size;
+      const maxAttempts = 3;
+      let editId = '';
+      let versionCode: number | null | undefined;
 
-      // 2. Upload AAB
-      onProgress('正在上傳 AAB 檔案...', 40);
-      const fileStream = fs.createReadStream(aabPath);
-      const uploadResponse = await publisher.edits.bundles.upload({
-        packageName,
-        editId,
-        media: {
-          mimeType: 'application/octet-stream',
-          body: fileStream,
-        },
-      });
-      const versionCode = uploadResponse.data.versionCode;
+      // 1+2. Create edit and upload AAB, retrying on transient network errors.
+      // A failed upload may leave the edit in an unknown state, so each attempt
+      // starts a fresh edit.
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          onProgress(attempt === 1 ? '正在建立編輯工作階段...' : `連線中斷，正在重試 (第 ${attempt}/${maxAttempts} 次)...`, 20);
+          const editResponse = await publisher.edits.insert({ packageName, requestBody: {} });
+          editId = editResponse.data.id!;
+
+          onProgress('正在上傳 AAB 檔案...', 40);
+          const uploadResponse = await publisher.edits.bundles.upload(
+            {
+              packageName,
+              editId,
+              media: {
+                mimeType: 'application/octet-stream',
+                body: fs.createReadStream(aabPath),
+              },
+            },
+            {
+              timeout: 30 * 60 * 1000,
+              onUploadProgress: (evt: { bytesRead: number }) => {
+                const fraction = Math.min(evt.bytesRead / fileSize, 1);
+                onProgress(`正在上傳 AAB 檔案... ${Math.round(fraction * 100)}%`, 40 + fraction * 30);
+              },
+            },
+          );
+          versionCode = uploadResponse.data.versionCode;
+          break;
+        } catch (err) {
+          if (attempt === maxAttempts || !isRetryableNetworkError(err)) throw err;
+          await new Promise((resolve) => setTimeout(resolve, attempt * 3000));
+        }
+      }
 
       const versionName = extractVersionNameFromAab(aabPath);
       const releaseName = versionName ? `${versionCode} (${versionName})` : String(versionCode);
