@@ -26,7 +26,7 @@
 ## 環境需求
 
 - macOS（Apple 上傳僅支援 macOS）
-- Node.js >= 20
+- Node.js >= 22.12.0（Electron 打包工具的需求）
 - Xcode Command Line Tools（用於 `xcrun altool`）
 - Firebase iOS SDK 的 `upload-symbols`（用於 dSYM 上傳，見下方說明）
 
@@ -35,6 +35,10 @@
 ```bash
 npm install
 ```
+
+`package.json` 的 `overrides` 將 `@electron/get@3.1.0` 使用的 `global-agent` 更新至 4.x，
+以移除含有 `sprintf-js` 漏洞（GHSA-hp3w-g68c-fv3c）的舊依賴鏈。
+待上游下載器更新後，可重新評估移除此覆寫設定。
 
 ## 開發
 
